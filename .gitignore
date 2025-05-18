@@ -18,5 +18,8 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-/static
-#'*.h5' 
+# weight
+*.h5
+
+# ignore all files in static folder
+static/
