@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ผลการวิเคราะห์ภาพ</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="wrapper">
+    <section class="card">
+      <h1 class="card__title">ผลการวิเคราะห์ภาพ</h1>
+
+      <!-- แสดงภาพที่อัปโหลด -->
+      <img src="{{ url_for('uploaded_file', filename=filename) }}"
+           alt="Uploaded image"
+           class="preview__img"
+           style="max-width:100%;border:1px solid #e2e8f0;border-radius:8px"/>
+
+      <p style="margin-top:1.4rem;font-size:1.05rem">{{ message }}</p>
+
+      <div style="margin-top:1.8rem;display:flex;gap:1rem;justify-content:center">
+        <!-- ปุ่มกลับไปหน้าอัปโหลด -->
+        <a href="/" class="btn-file" style="text-decoration:none">
+          เลือกรูปใหม่
+        </a>
+
+        <!-- เปลี่ยนข้อความปุ่มเป็น “ดำเนินแก้ไขภาพ” -->
+        <a href="{{ url_for('download_file', filename=filename) }}"
+           class="btn-submit" style="text-decoration:none">
+          ดำเนินแก้ไขภาพ
+        </a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

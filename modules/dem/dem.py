@@ -1,0 +1,54 @@
+"""
+DEM – hand-crafted detector:
+  • ตัดสินว่ารูปควรเข้า deblur, denoise, หรือ high-resolution (sr)
+  • ถ้าเป็น denoise จะคืนค่า sigma (ระดับ noise) กลับไปด้วย
+พิมพ์ออกทาง stdout รูปแบบ  <kind> <sigma_or_None>
+"""
+import sys
+import cv2
+import numpy as np
+from pathlib import Path
+
+# ───────── helper ────────────────────────────────────────────────────
+def variance_of_laplacian(gray):
+    return cv2.Laplacian(gray, cv2.CV_64F).var()
+
+def estimate_noise(gray):
+    """Return robust noise sigma by Median Absolute Deviation (MAD)."""
+    H = cv2.medianBlur(gray, 3)
+    sigma = np.mean(np.abs(gray.astype(np.float32) - H))
+    return sigma
+
+# ───────── main ──────────────────────────────────────────────────────
+def main(img_path: str):
+    if not Path(img_path).is_file():
+        print("hr None")       # fallback
+        return
+
+    img  = cv2.imread(img_path, cv2.IMREAD_COLOR)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # 1) blur detection
+    lap_var   = variance_of_laplacian(gray)
+    is_blur   = lap_var < 100          # threshold ⇒ ปรับตามต้องการ
+
+    # 2) noise detection
+    sigma_est = estimate_noise(gray)
+    is_noise  = sigma_est > 12         # threshold (σ ≈ 12 ขึ้นไปถือว่ามีนอยส์)
+
+    # 3) low-res detection (ต้องการ SR)
+    h, w = gray.shape
+    is_low_res = min(h, w) < 720       # ถ้าฝั่งใดเล็กกว่า 720 px
+
+    if is_blur:
+        print("blur None")
+    elif is_noise:
+        print(f"noise {sigma_est:.1f}")
+    else:
+        print("hr None")
+
+if __name__ == "__main__":
+    # usage: python dem.py path/to/image
+    if len(sys.argv) < 2:
+        sys.exit("usage: dem.py <image_path>")
+    main(sys.argv[1])

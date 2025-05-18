@@ -1,0 +1,112 @@
+/* ---------- Variables ---------- */
+:root {
+  --bg-top:   #f0f4ff;
+  --bg-bot:   #ffffff;
+  --card-bg:  rgba(255,255,255,0.9);
+  --border:   #e2e8f0;
+  --primary:  #2563eb;          /* blue-600 */
+  --primary-h:#1e4ed8;
+  --success:  #16a34a;          /* green-600 */
+  --success-h:#15803d;
+  --danger:   rgba(0,0,0,0.65);
+  --danger-h: rgba(0,0,0,0.8);
+  --radius:   8px;
+  --shadow:   0 6px 18px rgba(0,0,0,0.06);
+  --font:     'Inter', sans-serif;
+}
+
+/* ---------- Base ---------- */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--font);
+  line-height:1.6;
+  background:linear-gradient(180deg,var(--bg-top),var(--bg-bot));
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:1rem;
+}
+
+/* ---------- Card ---------- */
+.wrapper{width:100%;max-width:460px}
+.card{
+  background:var(--card-bg);
+  backdrop-filter:blur(6px);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:2rem 2.5rem;
+  text-align:center;
+}
+.card__title{
+  font-size:1.8rem;
+  font-weight:600;
+  color:#1f2937;
+  margin-bottom:1.5rem;
+}
+
+/* ---------- Form ---------- */
+.form{
+  display:flex;
+  flex-direction:column;
+  gap:1.2rem;
+  align-items:center;
+}
+
+/* hide native input */
+#file-input{display:none}
+
+/* custom file button */
+.btn-file{
+  cursor:pointer;
+  background:var(--primary);
+  color:#fff;
+  padding:0.65rem 1.4rem;
+  border-radius:var(--radius);
+  transition:background .2s;
+  font-weight:500;
+}
+.btn-file:hover{background:var(--primary-h)}
+.btn-file__label{pointer-events:none}
+
+/* submit */
+.btn-submit{
+  background:var(--success);
+  color:#fff;
+  border:none;
+  padding:0.65rem 1.5rem;
+  border-radius:var(--radius);
+  font-weight:500;
+  cursor:pointer;
+  transition:background .2s;
+}
+.btn-submit:hover{background:var(--success-h)}
+
+/* ---------- Preview ---------- */
+.preview{
+  position:relative;
+  margin-top:1.5rem;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.preview--hidden{display:none}
+.preview__img{display:block;width:100%;height:auto;object-fit:contain}
+
+/* close button */
+.preview__remove{
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:30px;
+  height:30px;
+  border:none;
+  border-radius:50%;
+  background:var(--danger);
+  color:#fff;
+  font-size:20px;
+  line-height:26px;
+  cursor:pointer;
+  transition:background .15s;
+}
+.preview__remove:hover{background:var(--danger-h)}
