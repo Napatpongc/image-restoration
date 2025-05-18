@@ -1,39 +1,45 @@
+# orchestrator/app.py
 import os
-import platform
 import subprocess
 import sys
+import uuid
 from flask import Flask, render_template, request, send_from_directory
 
 # ─── PATH SETUP ─────────────────────────────────────────────────────
-BASE_DIR      = os.path.abspath(os.path.dirname(__file__))
-PROJECT_ROOT  = os.path.abspath(os.path.join(BASE_DIR, '..'))
+BASE_DIR     = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..'))
+sys.path.insert(0, PROJECT_ROOT)  # ให้ import modules.arf.run_arf ได้
+
 TEMPLATE_DIR  = os.path.join(PROJECT_ROOT, 'templates')
 UPLOAD_FOLDER = os.path.join(PROJECT_ROOT, 'static', 'uploads')
+
+# ─── IMPORT RUN_ARF ─────────────────────────────────────────────────
+from modules.arf.run_arf import apply_arf
 
 # ─── FLASK APP ──────────────────────────────────────────────────────
 app = Flask(
     __name__,
     template_folder=TEMPLATE_DIR,
-    static_folder=None                 # เราจะเสิร์ฟ static เอง
+    static_folder=None
 )
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# ─── serve style.css (ไฟล์อยู่ใน templates/) ──────────────────────
+# ─── serve style.css & รูปอัปโหลด ──────────────────────────────────
 @app.route('/style.css')
 def style_css():
     return send_from_directory(TEMPLATE_DIR, 'style.css')
 
-# ─── serve อัปโหลดไฟล์รูป (ให้ <img> ใช้งาน) ─────────────────────
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
-# ─── helper: รัน dem.py ด้วย interpreter ปัจจุบัน (3.10.4) ───────
+# ─── helper: DEM วิเคราะห์ชนิดภาพ ──────────────────────────────────
 def run_dem(img_path: str):
     py     = sys.executable
     script = os.path.join(PROJECT_ROOT, 'modules', 'dem', 'dem.py')
-    out    = subprocess.check_output([py, script, img_path], text=True).strip()
-    kind, sigma_str = out.split()
+    kind, sigma_str = subprocess.check_output(
+        [py, script, img_path], text=True
+    ).strip().split()
     sigma = None if sigma_str == 'None' else float(sigma_str)
     return kind, sigma
 
@@ -52,10 +58,9 @@ def restore():
     in_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(in_path)
 
-    # === เรียก DEM ===
     kind, sigma = run_dem(in_path)
     if kind == 'blur':
-        msg = "ตรวจพบภาพเบลอ → ควรใช้โมเดล DeblurGANv2"
+        msg = "ตรวจพบภาพเบลอ → ควรใช้โมเดล DeblurGAN-v2"
     elif kind == 'noise':
         msg = f"ตรวจพบภาพมีนอยส์ (σ ≈ {sigma:.1f}) → ควรใช้โมเดล FFDNet"
     else:
@@ -64,7 +69,41 @@ def restore():
     return render_template(
         'result.html',
         filename=os.path.basename(in_path),
-        message=msg
+        message=msg,
+        kind=kind,
+        sigma=sigma if sigma else '',
+        processed=False      # ยังไม่กดดำเนินแก้ไข
+    )
+
+@app.route('/process', methods=['POST'])
+def process_image():
+    filename = request.form['filename']
+    kind     = request.form['kind']
+    sigma    = request.form.get('sigma')
+
+    inp_path = os.path.join(UPLOAD_FOLDER, filename)
+
+    # รองรับเฉพาะ blur → DeblurGAN-v2
+    if 'blur' in kind:
+        out_path = apply_arf(inp_path, kind, sigma)
+        out_name = os.path.basename(out_path)
+        return render_template(
+            'result.html',
+            filename=out_name,
+            message='✓ แก้ภาพเบลอด้วย DeblurGAN-v2 แล้ว',
+            kind=kind,
+            sigma=sigma,
+            processed=True       # กดแล้ว → ให้ซ่อนปุ่มดำเนิน และโชว์ดาวน์โหลด
+        )
+
+    # ถ้าไม่ใช่ blur ยังไม่รองรับ
+    return render_template(
+        'result.html',
+        filename=filename,
+        message='(ยังไม่รองรับชนิดนี้)',
+        kind=kind,
+        sigma=sigma,
+        processed=True
     )
 
 @app.route('/download/<filename>')

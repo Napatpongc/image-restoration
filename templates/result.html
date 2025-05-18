@@ -3,33 +3,43 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ผลการวิเคราะห์ภาพ</title>
+  <title>ผลการคืนสภาพภาพ</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <main class="wrapper">
     <section class="card">
-      <h1 class="card__title">ผลการวิเคราะห์ภาพ</h1>
+      <h1 class="card__title">ผลการคืนสภาพภาพ</h1>
 
-      <!-- แสดงภาพที่อัปโหลด -->
+      <!-- แสดงผลลัพธ์ภาพ -->
       <img src="{{ url_for('uploaded_file', filename=filename) }}"
-           alt="Uploaded image"
+           alt="result"
            class="preview__img"
            style="max-width:100%;border:1px solid #e2e8f0;border-radius:8px"/>
 
       <p style="margin-top:1.4rem;font-size:1.05rem">{{ message }}</p>
 
       <div style="margin-top:1.8rem;display:flex;gap:1rem;justify-content:center">
-        <!-- ปุ่มกลับไปหน้าอัปโหลด -->
-        <a href="/" class="btn-file" style="text-decoration:none">
-          เลือกรูปใหม่
-        </a>
 
-        <!-- เปลี่ยนข้อความปุ่มเป็น “ดำเนินแก้ไขภาพ” -->
+        <!-- ปุ่มเลือกรูปใหม่ (แสดงเสมอ) -->
+        <a href="/" class="btn-file" style="text-decoration:none">เลือกรูปใหม่</a>
+
+        <!-- ปุ่มดำเนินแก้ไขภาพ: แสดงเมื่อ processed == False -->
+        {% if not processed %}
+        <form action="/process" method="post" style="display:inline">
+          <input type="hidden" name="filename" value="{{ filename }}">
+          <input type="hidden" name="kind"     value="{{ kind }}">
+          <input type="hidden" name="sigma"    value="{{ sigma }}">
+          <button type="submit" class="btn-submit">ดำเนินแก้ไขภาพ</button>
+        </form>
+        {% endif %}
+
+        <!-- ปุ่มดาวน์โหลดผลลัพธ์: แสดงเมื่อ processed == True -->
+        {% if processed %}
         <a href="{{ url_for('download_file', filename=filename) }}"
-           class="btn-submit" style="text-decoration:none">
-          ดำเนินแก้ไขภาพ
-        </a>
+           class="btn-file" style="text-decoration:none">ดาวน์โหลดภาพ</a>
+        {% endif %}
+
       </div>
     </section>
   </main>
