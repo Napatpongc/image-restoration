@@ -20,6 +20,7 @@ Thumbs.db
 
 # weight
 *.h5
+*.pth
 
 # ignore all files in static folder
 static/
