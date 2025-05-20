@@ -1,4 +1,5 @@
 # orchestrator/app.py
+
 import os
 import subprocess
 import sys
@@ -93,7 +94,7 @@ def process_image():
             message='✓ แก้ภาพเบลอด้วย DeblurGAN-v2 แล้ว',
             kind=kind,
             sigma=sigma,
-            processed=True       # กดแล้ว → ให้ซ่อนปุ่มดำเนิน และโชว์ดาวน์โหลด
+            processed=True
         )
 
     # รองรับ noise → FFDNet
@@ -104,6 +105,19 @@ def process_image():
             'result.html',
             filename=out_name,
             message=f'✓ แก้ภาพมีนอยส์ (σ ≈ {float(sigma):.1f}) ด้วย FFDNet แล้ว',
+            kind=kind,
+            sigma=sigma,
+            processed=True
+        )
+
+    # รองรับ low-res → EDSR Super-Resolution
+    if 'hr' in kind:
+        out_path = apply_arf(inp_path, kind, sigma)
+        out_name = os.path.basename(out_path)
+        return render_template(
+            'result.html',
+            filename=out_name,
+            message='✓ คืนค่า Super-Resolution (×4) ด้วย EDSR แล้ว',
             kind=kind,
             sigma=sigma,
             processed=True

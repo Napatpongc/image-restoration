@@ -21,6 +21,22 @@ Thumbs.db
 # weight
 *.h5
 *.pth
+*.pt
 
 # ignore all files in static folder
 static/
+
+#edsr
+log.txt
+config.txt
+
+#img
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.webp
+*.svg
+*.ico

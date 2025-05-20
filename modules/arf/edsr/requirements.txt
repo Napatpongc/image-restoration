@@ -1,0 +1,8 @@
+# EDSR inference environment (Python 3.6)
+torch>=1.0.0
+numpy==1.19.0
+scikit-image
+imageio
+matplotlib
+tqdm
+opencv-python==4.3.0.38
