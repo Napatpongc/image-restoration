@@ -40,3 +40,6 @@ config.txt
 *.webp
 *.svg
 *.ico
+
+#bug
+out.txt

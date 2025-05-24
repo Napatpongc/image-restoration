@@ -110,3 +110,31 @@ body{
   transition:background .15s;
 }
 .preview__remove:hover{background:var(--danger-h)}
+
+/* ---------- Image-specific Spinner Overlay & Text ---------- */
+.img-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.overlay-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  transform: translate(-50%, -50%);
+  background: url('/spinner.svg') no-repeat center;
+  background-size: contain;
+  display: none;  /* ซ่อนตั้งต้น */
+  z-index: 10;
+}
+
+/* ---------- ข้อความใต้รูป (ผลการตรวจเบื้องต้น / loading) ---------- */
+.result-text {
+  margin-top: 1.4rem;
+  color: #000;
+  font-size: 1.2rem;
+  text-align: center;
+}

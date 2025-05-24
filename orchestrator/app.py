@@ -25,6 +25,15 @@ app = Flask(
 )
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# ─── เพิ่ม route สำหรับ spinner.svg ────────────────────────────
+@app.route('/spinner.svg')
+def spinner_svg():
+    return send_from_directory(
+        os.path.join(PROJECT_ROOT, 'static'),
+        'spinner.svg',
+        mimetype='image/svg+xml'
+    )
+
 # ─── serve style.css & รูปอัปโหลด ──────────────────────────────────
 @app.route('/style.css')
 def style_css():

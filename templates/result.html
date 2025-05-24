@@ -11,22 +11,27 @@
     <section class="card">
       <h1 class="card__title">ผลการคืนสภาพภาพ</h1>
 
-      <!-- แสดงผลลัพธ์ภาพ -->
-      <img src="{{ url_for('uploaded_file', filename=filename) }}"
-           alt="result"
-           class="preview__img"
-           style="max-width:100%;border:1px solid #e2e8f0;border-radius:8px"/>
+      <!-- Img + Spinner Overlay -->
+      <div class="img-container">
+        <!-- spinner.svg จะโผล่เมื่อกดปุ่มแก้ไข -->
+        <div id="img-spinner" class="overlay-spinner"></div>
+        <img
+          id="result-img"
+          src="{{ url_for('uploaded_file', filename=filename) }}"
+          alt="result"
+          class="preview__img"
+          style="max-width:100%; border:1px solid #e2e8f0; border-radius:8px;"
+        />
+      </div>
 
-      <p style="margin-top:1.4rem;font-size:1.05rem">{{ message }}</p>
+      <!-- ข้อความผลการตรวจเบื้องต้น หรือ loading message หลังกดแก้ไข -->
+      <p id="message-text" class="result-text">{{ message }}</p>
 
       <div style="margin-top:1.8rem;display:flex;gap:1rem;justify-content:center">
+        <a href="/" class="btn-file">เลือกรูปใหม่</a>
 
-        <!-- ปุ่มเลือกรูปใหม่ (แสดงเสมอ) -->
-        <a href="/" class="btn-file" style="text-decoration:none">เลือกรูปใหม่</a>
-
-        <!-- ปุ่มดำเนินแก้ไขภาพ: แสดงเมื่อ processed == False -->
         {% if not processed %}
-        <form action="/process" method="post" style="display:inline">
+        <form id="process-form" action="/process" method="post" style="display:inline">
           <input type="hidden" name="filename" value="{{ filename }}">
           <input type="hidden" name="kind"     value="{{ kind }}">
           <input type="hidden" name="sigma"    value="{{ sigma }}">
@@ -34,14 +39,42 @@
         </form>
         {% endif %}
 
-        <!-- ปุ่มดาวน์โหลดผลลัพธ์: แสดงเมื่อ processed == True -->
         {% if processed %}
         <a href="{{ url_for('download_file', filename=filename) }}"
-           class="btn-file" style="text-decoration:none">ดาวน์โหลดภาพ</a>
+           class="btn-file">ดาวน์โหลดภาพ</a>
         {% endif %}
-
       </div>
     </section>
   </main>
+
+  <script>
+    const form    = document.getElementById('process-form');
+    const spinner = document.getElementById('img-spinner');
+    const msgText = document.getElementById('message-text');
+
+    if (form) {
+      form.addEventListener('submit', () => {
+        spinner.style.display = 'block';
+
+        // เปลี่ยนข้อความใต้รูปตาม kind
+        const kind = form.elements['kind'].value;
+        let loading;
+        switch (kind) {
+          case 'blur':
+            loading = 'กำลังแก้ blur ด้วย DeblurGAN-v2';
+            break;
+          case 'noise':
+            loading = 'กำลังแก้ noise ด้วย FFDNet';
+            break;
+          case 'hr':
+            loading = 'กำลังแก้ Low-resolution ด้วย EDSR';
+            break;
+          default:
+            loading = 'กำลังประมวลผล…';
+        }
+        msgText.textContent = loading;
+      });
+    }
+  </script>
 </body>
 </html>

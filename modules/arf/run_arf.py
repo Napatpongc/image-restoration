@@ -56,7 +56,7 @@ def _run_edsr(in_path: Path) -> Path:
     edsr_dir   = PROJECT_ROOT / 'modules' / 'arf' / 'edsr'
     python_exe = edsr_dir / 'venv' / 'Scripts' / 'python.exe'
     script     = edsr_dir / 'main.py'
-    model_file = PROJECT_ROOT / 'modules' / 'arf' / 'experiment' / 'model' / 'EDSR_x4.pt'
+    model_file = PROJECT_ROOT / 'modules' / 'arf' / 'experiment' / 'model' / 'EDSR_x3.pt'
 
     # 1) เตรียม edsr/data/Demo และ copy input
     demo_name = 'Demo'
@@ -69,7 +69,7 @@ def _run_edsr(in_path: Path) -> Path:
     cmd = [
         str(python_exe), str(script),
         '--data_test',   demo_name,
-        '--scale',       '4',
+        '--scale',       '3',
         '--model',       'EDSR',
         '--n_resblocks', '32',
         '--n_feats',     '256',
@@ -85,7 +85,7 @@ def _run_edsr(in_path: Path) -> Path:
     # 3) รวบรวมผลลัพธ์จาก modules/arf/experiment/test/results-Demo
     result_dir = PROJECT_ROOT / 'modules' / 'arf' / 'experiment' / 'test' / f'results-{demo_name}'
     # output filename pattern: <stem>_x4_SR.png
-    sr_files   = list(result_dir.glob(f"{in_path.stem}_x4_SR.*"))
+    sr_files   = list(result_dir.glob(f"{in_path.stem}_x3_SR.*"))
     if not sr_files:
         raise FileNotFoundError(f"ไม่พบผลลัพธ์ SR ใน {result_dir}")
     out_file = sr_files[0]
