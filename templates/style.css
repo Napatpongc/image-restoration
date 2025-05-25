@@ -16,102 +16,126 @@
 }
 
 /* ---------- Base ---------- */
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:var(--font);
-  line-height:1.6;
-  background:linear-gradient(180deg,var(--bg-top),var(--bg-bot));
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:1rem;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: var(--font);
+  line-height: 1.6;
+  background: linear-gradient(180deg, var(--bg-top), var(--bg-bot));
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
 }
 
 /* ---------- Card ---------- */
-.wrapper{width:100%;max-width:460px}
-.card{
-  background:var(--card-bg);
-  backdrop-filter:blur(6px);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  padding:2rem 2.5rem;
-  text-align:center;
+.wrapper {
+  width: 100%;
+  max-width: 460px;
 }
-.card__title{
-  font-size:1.8rem;
-  font-weight:600;
-  color:#1f2937;
-  margin-bottom:1.5rem;
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(6px);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem 2.5rem;
+  text-align: center;
+}
+.card__title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
 }
 
 /* ---------- Form ---------- */
-.form{
-  display:flex;
-  flex-direction:column;
-  gap:1.2rem;
-  align-items:center;
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
 }
 
 /* hide native input */
-#file-input{display:none}
+#file-input {
+  display: none;
+}
 
 /* custom file button */
-.btn-file{
-  cursor:pointer;
-  background:var(--primary);
-  color:#fff;
-  padding:0.65rem 1.4rem;
-  border-radius:var(--radius);
-  transition:background .2s;
-  font-weight:500;
+.btn-file {
+  cursor: pointer;
+  background: var(--primary);
+  color: #fff;
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--radius);
+  transition: background 0.2s;
+  font-weight: 500;
 }
-.btn-file:hover{background:var(--primary-h)}
-.btn-file__label{pointer-events:none}
+.btn-file:hover {
+  background: var(--primary-h);
+}
+.btn-file__label {
+  pointer-events: none;
+}
 
 /* submit */
-.btn-submit{
-  background:var(--success);
-  color:#fff;
-  border:none;
-  padding:0.65rem 1.5rem;
-  border-radius:var(--radius);
-  font-weight:500;
-  cursor:pointer;
-  transition:background .2s;
+.btn-submit {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  padding: 0.65rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
 }
-.btn-submit:hover{background:var(--success-h)}
+.btn-submit:hover {
+  background: var(--success-h);
+}
 
 /* ---------- Preview ---------- */
-.preview{
-  position:relative;
-  margin-top:1.5rem;
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  overflow:hidden;
+.preview {
+  position: relative;
+  margin-top: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
-.preview--hidden{display:none}
-.preview__img{display:block;width:100%;height:auto;object-fit:contain}
+.preview--hidden {
+  display: none !important;
+}
+.preview__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
 
 /* close button */
-.preview__remove{
-  position:absolute;
-  top:8px;
-  right:8px;
-  width:30px;
-  height:30px;
-  border:none;
-  border-radius:50%;
-  background:var(--danger);
-  color:#fff;
-  font-size:20px;
-  line-height:26px;
-  cursor:pointer;
-  transition:background .15s;
+.preview__remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #fff;
+  font-size: 20px;
+  line-height: 26px;
+  cursor: pointer;
+  transition: background 0.15s;
 }
-.preview__remove:hover{background:var(--danger-h)}
+.preview__remove:hover {
+  background: var(--danger-h);
+}
 
-/* ---------- Image-specific Spinner Overlay & Text ---------- */
+/* ---------- Image-specific Spinner Overlay ---------- */
 .img-container {
   position: relative;
   display: inline-block;

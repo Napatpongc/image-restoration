@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Image Restoration</title>
-  <!-- โหลด CSS จาก /style.css -->
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
@@ -12,33 +11,39 @@
     <section class="card">
       <h1 class="card__title">Image&nbsp;Restoration</h1>
 
-      <!-- ===== ฟอร์มอัปโหลด ===== -->
-      <form id="upload-form" action="/restore" method="post" enctype="multipart/form-data" class="form">
-        <!-- ปุ่มเลือกไฟล์ -->
+      <!-- ฟอร์มอัปโหลด & คืนสภาพภาพ ในหน้าเดียว -->
+      <form id="upload-form" action="/process" method="post" enctype="multipart/form-data" class="form">
         <label class="btn-file">
           <input id="file-input" type="file" name="image" accept="image/*" required />
           <span class="btn-file__label">เลือกไฟล์ภาพ</span>
         </label>
-
-        <!-- ปุ่มส่ง -->
         <button type="submit" class="btn-submit">คืนสภาพภาพ</button>
       </form>
 
-      <!-- ===== พรีวิวภาพ ===== -->
-      <div id="preview-container" class="preview preview--hidden">
+      <!-- พรีวิว + overlay spinner/ข้อความ -->
+      <div id="preview-container" class="preview preview--hidden img-container">
         <button id="remove-btn" class="preview__remove" title="ลบภาพ">&times;</button>
+
+        <!-- Spinner SVG ทับพรีวิว -->
+        <div id="index-spinner" class="overlay-spinner"></div>
+        <!-- ข้อความใต้ spinner -->
+
+        <!-- รูปพรีวิว -->
         <img id="preview" class="preview__img" src="#" alt="Preview" />
       </div>
     </section>
   </main>
 
-  <!-- ===== JS พรีวิว/ลบ ===== -->
   <script>
     const fileInput        = document.getElementById('file-input');
     const previewContainer = document.getElementById('preview-container');
     const previewImage     = document.getElementById('preview');
     const removeBtn        = document.getElementById('remove-btn');
+    const form             = document.getElementById('upload-form');
+    const spinner          = document.getElementById('index-spinner');
+    const spinnerText      = document.getElementById('index-spinner-text');
 
+    // เมื่อเลือกรูป → โชว์พรีวิว
     fileInput.addEventListener('change', () => {
       const file = fileInput.files[0];
       if (!file) return;
@@ -50,10 +55,18 @@
       reader.readAsDataURL(file);
     });
 
+    // ลบพรีวิว
     removeBtn.addEventListener('click', () => {
       fileInput.value = '';
       previewContainer.classList.add('preview--hidden');
       previewImage.src = '#';
+    });
+
+    // ตอนกด “คืนสภาพภาพ” → แสดง spinner+ข้อความ แล้วให้ความเข้มรูปจางลง
+    form.addEventListener('submit', () => {
+      spinner.style.display     = 'block';
+      spinnerText.style.display = 'block';
+      previewImage.style.opacity = '0.3';
     });
   </script>
 </body>

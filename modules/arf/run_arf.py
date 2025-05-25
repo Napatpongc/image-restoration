@@ -7,70 +7,117 @@ import shutil
 from pathlib import Path
 
 # ─── PATH SETUP ─────────────────────────────────────────────────────
-PROJECT_ROOT = Path(__file__).resolve().parents[2]  # <project_root>/image_restoration
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 UPLOAD_DIR   = PROJECT_ROOT / 'static' / 'uploads'
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+def run_dem(img_path: Path):
+    """
+    รัน dem.py เพื่อตรวจหาว่าในภาพมี noise, blur, หรือ low-resolution
+    คืนค่า (kind, sigma) เช่น ('noise', 15.2) หรือ ('blur', None)
+    """
+    dem_script = PROJECT_ROOT / 'modules' / 'dem' / 'dem.py'
+    out = subprocess.check_output(
+        [sys.executable, str(dem_script), str(img_path)],
+        text=True
+    ).strip().split()
+    kind  = out[0]
+    sigma = None if out[1] == 'None' else float(out[1])
+    return kind, sigma  # :contentReference[oaicite:0]{index=0}
+
+def apply_arf(input_path: str, kind: str = None, sigma: float = None) -> str:
+    """
+    Pipeline อัตโนมัติ:
+      1) DEM
+      2) ถ้าเจอ noise → FFDNet → DEM
+      3) ถ้าเจอ blur  → DeblurGAN-v2 → DEM
+      4) ถ้าเจอ low-res → EDSR
+    """
+    p = Path(input_path)
+    # 1) ถ้าไม่มี kind มาจาก front-end, ตรวจครั้งแรก
+    if kind is None:
+        kind, sigma = run_dem(p)
+
+    # 2) Denoise ด้วย FFDNet
+    if kind == 'noise':
+        p = Path(_run_ffdnet(p, sigma))
+        kind, sigma = run_dem(p)
+        if kind == 'noise':
+            return str(p)
+
+    # 3) Deblur ด้วย DeblurGAN-v2
+    if kind == 'blur':
+        p = Path(_run_deblurgan(p))
+        kind, sigma = run_dem(p)
+        if kind == 'blur':
+            return str(p)
+
+    # 4) Super-resolution ด้วย EDSR
+    if kind == 'hr':
+        p = Path(_run_edsr(p))
+
+    return str(p)
 
 
-def _run_deblurgan(in_path: Path) -> Path:
+def _run_deblurgan(in_path: Path) -> str:
     """
-    Wrapper สำหรับ DeblurGAN-v2
+    Wrapper ให้ DeblurGAN-v2 เขียนผลลัพธ์ตรงไปที่ static/uploads
     """
-    out_path = in_path.with_name(f"{in_path.stem}_deblur_{uuid.uuid4().hex[:6]}.jpg")
-    script   = PROJECT_ROOT / 'modules' / 'arf' / 'deblurganv2' / 'predict.py'
-    subprocess.check_call([sys.executable, str(script), str(in_path), str(out_path)])
-    return out_path
+    script  = PROJECT_ROOT / 'modules' / 'arf' / 'deblurganv2' / 'predict.py'
+    # predict.py ใช้งานแบบ: python predict.py <input_image> <output_image> :contentReference[oaicite:1]{index=1}
+    out_name = f"{in_path.stem}_deblur_{uuid.uuid4().hex[:6]}.jpg"
+    out_path = UPLOAD_DIR / out_name
+
+    subprocess.check_call([
+        sys.executable,
+        str(script),
+        str(in_path),
+        str(out_path)
+    ])
+    return str(out_path)
 
 
-def _run_ffdnet(in_path: Path, sigma: str) -> Path:
+def _run_ffdnet(in_path: Path, sigma: float) -> str:
     """
-    Wrapper สำหรับ FFDNet
+    Wrapper ให้ FFDNet เขียนผลลัพธ์ตรงไปที่ static/uploads
     """
-    base_dir   = PROJECT_ROOT / 'modules' / 'arf' / 'ffdnet'
-    python_exe = base_dir / 'venv' / 'Scripts' / 'python.exe'
-    script     = base_dir / 'test_ffdnet_ipol.py'
+    base_dir = PROJECT_ROOT / 'modules' / 'arf' / 'ffdnet'
+    script   = base_dir / 'test_ffdnet_ipol.py'
 
     out_name = f"{in_path.stem}_denoise_{uuid.uuid4().hex[:6]}.png"
-    out_path = in_path.with_name(out_name)
+    out_path = UPLOAD_DIR / out_name
 
     cmd = [
-        str(python_exe), str(script),
+        sys.executable, str(script),
         '--input',       str(in_path),
-        '--noise_sigma', sigma,
+        '--noise_sigma', str(sigma),
         '--add_noise',   'False',
         '--no_gpu',
         '--output',      str(out_path)
     ]
     subprocess.check_call(cmd, cwd=str(base_dir))
-    return out_path
+    return str(out_path)
 
 
-def _run_edsr(in_path: Path) -> Path:
+def _run_edsr(in_path: Path) -> str:
     """
-    Wrapper สำหรับ EDSR Super-Resolution (×4):
-      1) copy input → edsr/data/Demo
-      2) รัน main.py ใน venv Python3.6
-      3) รวบรวมผลลัพธ์จาก modules/arf/experiment/test/results-Demo
-      4) copy กลับมา static/uploads
+    Wrapper ให้ EDSR เขียนผลลัพธ์ไปที่ static/uploads
     """
-    # Paths
     edsr_dir   = PROJECT_ROOT / 'modules' / 'arf' / 'edsr'
-    python_exe = edsr_dir / 'venv' / 'Scripts' / 'python.exe'
     script     = edsr_dir / 'main.py'
-    model_file = PROJECT_ROOT / 'modules' / 'arf' / 'experiment' / 'model' / 'EDSR_x3.pt'
-
-    # 1) เตรียม edsr/data/Demo และ copy input
-    demo_name = 'Demo'
-    demo_dir  = edsr_dir / 'data' / demo_name
+    demo_name  = 'Demo'
+    demo_dir   = edsr_dir / 'data' / demo_name
     demo_dir.mkdir(parents=True, exist_ok=True)
-    demo_in   = demo_dir / in_path.name
-    shutil.copy(in_path, demo_in)
+    shutil.copy(in_path, demo_dir / in_path.name)
 
-    # 2) สั่งรัน main.py ของ EDSR
+    scale      = '3'  # เปลี่ยนเป็น '4' ถ้าต้องการ
+    model_file = PROJECT_ROOT / 'modules' / 'arf' / 'experiment' / 'model' / f'EDSR_x{scale}.pt'
+
     cmd = [
-        str(python_exe), str(script),
-        '--data_test',   demo_name,
-        '--scale',       '3',
-        '--model',       'EDSR',
+        sys.executable, str(script),
+        '--data_test', demo_name,
+        '--scale',     scale,
+        '--model',     'EDSR',
         '--n_resblocks', '32',
         '--n_feats',     '256',
         '--res_scale',   '0.1',
@@ -82,31 +129,16 @@ def _run_edsr(in_path: Path) -> Path:
     ]
     subprocess.check_call(cmd, cwd=str(edsr_dir))
 
-    # 3) รวบรวมผลลัพธ์จาก modules/arf/experiment/test/results-Demo
+    # หาไฟล์ <stem>_x{scale}_SR.* หรือ fallback เป็นชื่อเดิม
     result_dir = PROJECT_ROOT / 'modules' / 'arf' / 'experiment' / 'test' / f'results-{demo_name}'
-    # output filename pattern: <stem>_x4_SR.png
-    sr_files   = list(result_dir.glob(f"{in_path.stem}_x3_SR.*"))
+    sr_files = list(result_dir.glob(f"{in_path.stem}_x{scale}_SR.*"))
     if not sr_files:
-        raise FileNotFoundError(f"ไม่พบผลลัพธ์ SR ใน {result_dir}")
-    out_file = sr_files[0]
+        sr_files = list(result_dir.glob(in_path.name))
+    if not sr_files:
+        raise FileNotFoundError(f"ไม่พบผลลัพธ์ EDSR ใน {result_dir}")
 
-    # 4) copy ผลลัพธ์ไป static/uploads
-    final_name = f"{in_path.stem}_sr4_{uuid.uuid4().hex[:6]}.png"
+    out_file  = sr_files[0]
+    final_name = f"{in_path.stem}_sr{scale}_{uuid.uuid4().hex[:6]}.png"
     dest       = UPLOAD_DIR / final_name
     shutil.copy(out_file, dest)
-    return dest
-
-
-def apply_arf(in_path: str, kind: str, sigma: str = None) -> str:
-    """
-    Dispatcher สำหรับ DeblurGAN-v2, FFDNet, EDSR
-    (kind: 'blur' | 'noise' | 'hr')
-    """
-    p = Path(in_path)
-    if 'blur' in kind:
-        return str(_run_deblurgan(p))
-    if 'noise' in kind:
-        return str(_run_ffdnet(p, sigma))
-    if 'hr' in kind:
-        return str(_run_edsr(p))
-    return in_path
+    return str(dest)
