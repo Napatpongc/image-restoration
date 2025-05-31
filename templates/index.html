@@ -12,36 +12,50 @@
       <h1 class="card__title">Image&nbsp;Restoration</h1>
 
       <!-- ฟอร์มอัปโหลด & คืนสภาพภาพ ในหน้าเดียว -->
-      <form id="upload-form" action="/process" method="post" enctype="multipart/form-data" class="form">
-        <label class="btn-file">
-          <input id="file-input" type="file" name="image" accept="image/*" required />
+      <form id="upload-form"
+            action="/process"
+            method="post"
+            enctype="multipart/form-data"
+            class="form">
+        <!-- เพิ่ม id ไว้ให้ JS เลือก -->
+        <label id="file-label" class="btn-file">
+          <input id="file-input"
+                 type="file"
+                 name="image"
+                 accept="image/*"
+                 required />
           <span class="btn-file__label">เลือกไฟล์ภาพ</span>
         </label>
         <button type="submit" class="btn-submit">คืนสภาพภาพ</button>
       </form>
 
-      <!-- พรีวิว + overlay spinner/ข้อความ -->
-      <div id="preview-container" class="preview preview--hidden img-container">
-        <button id="remove-btn" class="preview__remove" title="ลบภาพ">&times;</button>
+      <!-- พรีวิว + overlay spinner -->
+      <div id="preview-container"
+           class="preview preview--hidden img-container">
+        <button id="remove-btn"
+                class="preview__remove"
+                title="ลบภาพ">&times;</button>
 
         <!-- Spinner SVG ทับพรีวิว -->
         <div id="index-spinner" class="overlay-spinner"></div>
-        <!-- ข้อความใต้ spinner -->
 
         <!-- รูปพรีวิว -->
-        <img id="preview" class="preview__img" src="#" alt="Preview" />
+        <img id="preview"
+             class="preview__img"
+             src="#"
+             alt="Preview" />
       </div>
     </section>
   </main>
 
   <script>
-    const fileInput        = document.getElementById('file-input');
+    const fileInput   = document.getElementById('file-input');
+    const fileLabel   = document.getElementById('file-label');
     const previewContainer = document.getElementById('preview-container');
     const previewImage     = document.getElementById('preview');
     const removeBtn        = document.getElementById('remove-btn');
     const form             = document.getElementById('upload-form');
     const spinner          = document.getElementById('index-spinner');
-    const spinnerText      = document.getElementById('index-spinner-text');
 
     // เมื่อเลือกรูป → โชว์พรีวิว
     fileInput.addEventListener('change', () => {
@@ -62,11 +76,17 @@
       previewImage.src = '#';
     });
 
-    // ตอนกด “คืนสภาพภาพ” → แสดง spinner+ข้อความ แล้วให้ความเข้มรูปจางลง
+    // ตอนกด “คืนสภาพภาพ” → แสดง spinner แล้วจางภาพ + disable ปุ่มทั้งหมด
     form.addEventListener('submit', () => {
-      spinner.style.display     = 'block';
-      spinnerText.style.display = 'block';
-      previewImage.style.opacity = '0.3';
+      // 1) disable ปุ่มเลือกไฟล์ (label) โดยใส่คลาส .disabled
+      fileLabel.classList.add('disabled');
+      // 2) disable ปุ่มคืนสภาพภาพ
+      document.querySelector('.btn-submit').disabled = true;
+      // 3) ซ่อนปุ่ม × บนพรีวิว
+      removeBtn.style.display = 'none';
+      // 4) แสดง spinner และทำภาพจางลง
+      spinner.style.display       = 'block';
+      previewImage.style.opacity  = '0.3';
     });
   </script>
 </body>

@@ -140,6 +140,10 @@ parser.add_argument('--save_results', action='store_true',
 parser.add_argument('--save_gt', action='store_true',
                     help='save LR and HR images together')
 
+# ─── New option for custom output directory ──────────────────────────
+parser.add_argument('--save_dir', type=str, default='',
+                    help='override default results path (e.g. static/uploads)')
+
 # ─── Parse & post-processing ─────────────────────────────────────────
 args = parser.parse_args()
 template.set_template(args)

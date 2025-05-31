@@ -146,19 +146,25 @@ class checkpoint():
         for _ in range(self.n_processes): self.queue.put((None, None))
         while not self.queue.empty(): time.sleep(1)
         for p in self.process: p.join()
-
+    
     def save_results(self, dataset, filename, save_list, scale):
         if self.args.save_results:
-            filename = self.get_path(
-                'results-{}'.format(dataset.dataset.name),
-                '{}_x{}_'.format(filename, scale)
+            save_dir = getattr(self.args, 'save_dir', '')
+            if save_dir:
+                out_dir = save_dir
+                os.makedirs(out_dir, exist_ok=True)
+                base = os.path.join(out_dir, f'{filename}_x{scale}_')
+            else:
+                base = self.get_path(
+                f'results-{dataset.dataset.name}',
+                f'{filename}_x{scale}_'
             )
 
-            postfix = ('SR', 'LR', 'HR')
-            for v, p in zip(save_list, postfix):
-                normalized = v[0].mul(255 / self.args.rgb_range)
-                tensor_cpu = normalized.byte().permute(1, 2, 0).cpu()
-                self.queue.put(('{}{}.png'.format(filename, p), tensor_cpu))
+        postfix = ('SR', 'LR', 'HR')
+        for tensor_list, p in zip(save_list, postfix):
+            normalized = tensor_list[0].mul(255 / self.args.rgb_range)
+            img = normalized.byte().permute(1, 2, 0).cpu()
+            self.queue.put((f'{base}{p}.png', img))
 
 def quantize(img, rgb_range):
     pixel_range = 255 / rgb_range

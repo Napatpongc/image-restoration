@@ -6,6 +6,7 @@ import uuid
 import shutil
 from pathlib import Path
 
+
 # ─── PATH SETUP ─────────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 UPLOAD_DIR   = PROJECT_ROOT / 'static' / 'uploads'
@@ -92,7 +93,6 @@ def _run_ffdnet(in_path: Path, sigma: float) -> str:
         '--input',       str(in_path),
         '--noise_sigma', str(sigma),
         '--add_noise',   'False',
-        '--no_gpu',
         '--output',      str(out_path)
     ]
     subprocess.check_call(cmd, cwd=str(base_dir))
@@ -105,9 +105,12 @@ def _run_edsr(in_path: Path) -> str:
     """
     edsr_dir   = PROJECT_ROOT / 'modules' / 'arf' / 'edsr'
     script     = edsr_dir / 'main.py'
-    demo_name  = 'Demo'
-    demo_dir   = edsr_dir / 'data' / demo_name
+    demo_name = 'Demo'
+    demo_dir  = edsr_dir / 'data' / demo_name
     demo_dir.mkdir(parents=True, exist_ok=True)
+    for f in demo_dir.iterdir():
+        if f.is_file():
+            f.unlink()
     shutil.copy(in_path, demo_dir / in_path.name)
 
     scale      = '3'  # เปลี่ยนเป็น '4' ถ้าต้องการ
@@ -124,21 +127,19 @@ def _run_edsr(in_path: Path) -> str:
         '--pre_train',   str(model_file),
         '--test_only',
         '--save_results',
-        '--cpu',
-        '--n_threads',   '1'
+        '--save_dir',   str(UPLOAD_DIR),
+        '--n_threads',   '1',
+        
     ]
     subprocess.check_call(cmd, cwd=str(edsr_dir))
 
     # หาไฟล์ <stem>_x{scale}_SR.* หรือ fallback เป็นชื่อเดิม
-    result_dir = PROJECT_ROOT / 'modules' / 'arf' / 'experiment' / 'test' / f'results-{demo_name}'
-    sr_files = list(result_dir.glob(f"{in_path.stem}_x{scale}_SR.*"))
+    result_dir = UPLOAD_DIR
+    sr_files  = list(result_dir.glob(f"{in_path.stem}_x{scale}_SR.*"))
     if not sr_files:
         sr_files = list(result_dir.glob(in_path.name))
     if not sr_files:
         raise FileNotFoundError(f"ไม่พบผลลัพธ์ EDSR ใน {result_dir}")
 
-    out_file  = sr_files[0]
-    final_name = f"{in_path.stem}_sr{scale}_{uuid.uuid4().hex[:6]}.png"
-    dest       = UPLOAD_DIR / final_name
-    shutil.copy(out_file, dest)
-    return str(dest)
+    out_file = sr_files[0]
+    return str(out_file)

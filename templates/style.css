@@ -4,9 +4,9 @@
   --bg-bot:   #ffffff;
   --card-bg:  rgba(255,255,255,0.9);
   --border:   #e2e8f0;
-  --primary:  #2563eb;          /* blue-600 */
+  --primary:  #2563eb;
   --primary-h:#1e4ed8;
-  --success:  #16a34a;          /* green-600 */
+  --success:  #16a34a;
   --success-h:#15803d;
   --danger:   rgba(0,0,0,0.65);
   --danger-h: rgba(0,0,0,0.8);
@@ -78,6 +78,12 @@ body {
 .btn-file:hover {
   background: var(--primary-h);
 }
+/* disabled file-label */
+.btn-file.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 .btn-file__label {
   pointer-events: none;
 }
@@ -93,8 +99,15 @@ body {
   cursor: pointer;
   transition: background 0.2s;
 }
-.btn-submit:hover {
+/* hover only when not disabled */
+.btn-submit:not(:disabled):hover {
   background: var(--success-h);
+}
+/* disabled submit button */
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* ---------- Preview ---------- */
@@ -151,11 +164,23 @@ body {
   transform: translate(-50%, -50%);
   background: url('/spinner.svg') no-repeat center;
   background-size: contain;
-  display: none;  /* ซ่อนตั้งต้น */
+  display: none;
   z-index: 10;
 }
 
-/* ---------- ข้อความใต้รูป (ผลการตรวจเบื้องต้น / loading) ---------- */
+.overlay-text {
+  position: absolute;
+  top: calc(50% + 40px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  color: #000;
+  font-size: 1.1rem;
+  text-align: center;
+  z-index: 10;
+}
+
+/* ---------- Result Text ---------- */
 .result-text {
   margin-top: 1.4rem;
   color: #000;
