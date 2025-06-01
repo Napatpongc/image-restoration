@@ -5,6 +5,7 @@ import subprocess
 import uuid
 import shutil
 from pathlib import Path
+from ..fem.run_fem import apply_fem
 
 
 # ─── PATH SETUP ─────────────────────────────────────────────────────
@@ -56,6 +57,7 @@ def apply_arf(input_path: str, kind: str = None, sigma: float = None) -> str:
     # 4) Super-resolution ด้วย EDSR
     if kind == 'hr':
         p = Path(_run_edsr(p))
+        p = Path(apply_fem(str(p)))
 
     return str(p)
 
