@@ -1,0 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cu128
+-r requirements.txt
+torch==2.8.0
+torchvision==0.23.0
+torchsummary==1.5.1
