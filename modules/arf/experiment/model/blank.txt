@@ -1,0 +1,1 @@
+put model EDSR_x2.pt, EDSR_x3.pt, EDSR_x4.pt in this folder
