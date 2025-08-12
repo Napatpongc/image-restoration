@@ -61,8 +61,14 @@ image_restoration/
 > **GPU first.** Install the CUDA-matched PyTorch build, then the rest of dependencies.  
 > You can either use the *one-file* install (recommended) or do it manually.
 
-### Option A — One file (recommended)
-Pick the file that matches your CUDA:
+### Option A —  file (recommended)
+1. Install requiremts:
+```bash
+# requirements.txt
+pip install -r requirements.txt
+```
+
+2. Pick the file that matches your CUDA:
 ```bash
 # CUDA 11.8
 pip install -r requirements-cu118.txt
